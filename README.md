@@ -1,5 +1,7 @@
 # Terminal-Shell
+
 Project Partners : Shreyastha Banik & Aakash Baral
+
 Roles handling: Shreyastha Banik - Command parsing, Command Execution, Redirection, Shell Cycle, cd and Exit, Fork() and Execvp()
                 Aakash Baral - Output and Memory Management, Error handling, Dup2(), input and Prompt printing. 
                 
