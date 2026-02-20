@@ -3,7 +3,7 @@ TechShell is a custom Unix-like shell written in C for the CSC 222 Systems Progr
 
 Project Partners : Shreyastha Banik & Aakash Baral
 
-Roles handling: 
+Role handling: 
 
 Shreyastha Banik - Command parsing, Command Execution, Redirection, Shell Cycle, cd and Exit, Fork() and Execvp()
                 
