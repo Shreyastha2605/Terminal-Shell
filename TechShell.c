@@ -6,6 +6,12 @@
 #include <sys/wait.h>   
 #include <fcntl.h>
 #include <errno.h>
+#include <limits.h>
+
+#define RED   "\x1b[31m"
+#define BLUE  "\x1b[34m"
+#define RESET "\x1b[0m"
+
 
 // Structure to hold parsed command information
 typedef struct {
@@ -66,10 +72,17 @@ int main() {
  * Prints the shell prompt
  */
 void print_prompt() {
-    printf("TechShell> ");
+    char cwd[4096];
+
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        printf(BLUE "%s$ " RESET, cwd);   // blue prompt
+    } else {
+        fprintf(stderr, RED "Error %d (%s)\n" RESET, errno, strerror(errno));
+        printf(BLUE "$ " RESET);
+    }
+
     fflush(stdout);
 }
-
 
 /** Parses input string into:*/
 
@@ -81,19 +94,19 @@ ShellCommand parse_command(char *input) {
     cmd.in_file = NULL;
     cmd.out_file = NULL;
 
-    char *token = strtok(input, " ");
+    char *token = strtok(input, " \t");
 
     while (token != NULL) {
 
         // Handle input redirection
         if (strcmp(token, "<") == 0) {
-            token = strtok(NULL, " ");
+            token = strtok(NULL, " \t");
             if (token)
                 cmd.in_file = strdup(token);
         }
         // Handle output redirection
         else if (strcmp(token, ">") == 0) {
-            token = strtok(NULL, " ");
+            token = strtok(NULL, " \t");
             if (token)
                 cmd.out_file = strdup(token);
         }
@@ -102,7 +115,7 @@ ShellCommand parse_command(char *input) {
             cmd.argv[cmd.argc++] = strdup(token);
         }
 
-        token = strtok(NULL, " ");
+        token = strtok(NULL, " \t");
     }
 
     cmd.argv[cmd.argc] = NULL;  // Required for execvp
@@ -126,7 +139,7 @@ void execute_command(ShellCommand *cmd) {
             fprintf(stderr, "cd: missing argument\n");
         } else {
             if (chdir(cmd->argv[1]) != 0) {
-                fprintf(stderr, "Error %d (%s)\n", errno, strerror(errno));
+                fprintf(stderr, RED "Error %d (%s)\n" RESET, errno, strerror(errno));
             }
         }
         return;
@@ -136,7 +149,7 @@ void execute_command(ShellCommand *cmd) {
     pid_t pid = fork();
 
     if (pid < 0) {
-        fprintf(stderr, "Error %d (%s)\n", errno, strerror(errno));
+        fprintf(stderr, RED "Error %d (%s)\n" RESET, errno, strerror(errno));
         return;
     }
 
@@ -147,7 +160,7 @@ void execute_command(ShellCommand *cmd) {
         if (cmd->in_file) {
             int fd = open(cmd->in_file, O_RDONLY);
             if (fd < 0) {
-                fprintf(stderr, "Error %d (%s)\n", errno, strerror(errno));
+                fprintf(stderr, RED "Error %d (%s)\n" RESET, errno, strerror(errno));
                 exit(1);
             }
 
@@ -162,7 +175,7 @@ void execute_command(ShellCommand *cmd) {
                           O_WRONLY | O_CREAT | O_TRUNC,
                           0644);
             if (fd < 0) {
-                fprintf(stderr, "Error %d (%s)\n", errno, strerror(errno));
+                fprintf(stderr, RED "Error %d (%s)\n" RESET, errno, strerror(errno));
                 exit(1);
             }
 
@@ -175,7 +188,7 @@ void execute_command(ShellCommand *cmd) {
         execvp(cmd->argv[0], cmd->argv);
 
         // If execvp fails
-        fprintf(stderr, "Error %d (%s)\n", errno, strerror(errno));
+        fprintf(stderr, RED "Error %d (%s)\n" RESET, errno, strerror(errno));
         exit(1);
     }
     else {
