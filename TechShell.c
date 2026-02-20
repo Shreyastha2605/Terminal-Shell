@@ -1,3 +1,5 @@
+//TechShell.c - a project created by Aakash and Shreyastha for the submission for CSC 222 showing a custom bash command shell
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
